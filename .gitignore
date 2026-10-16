@@ -1,0 +1,69 @@
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Personal and raw job-search data
+data/
+data/raw/
+data/private/
+data/imports/
+data/jobs/
+data/evaluations/
+data/runs/
+config/candidate_profile/
+*.xlsx
+*.xls
+*.docx
+*.pdf
+*.pptx
+*.ppt
+
+# Personal career strategy, resume/CV drafts, interview prep
+docs/career_strategy/
+cv_review/
+.pptx-work/
+docs/process/
+docs/knowledge_base/
+
+# Working docs kept local: on hold, superseded, drafts, one-off checks
+docs/product/
+docs/templates/
+docs/llm_eval/archive/
+docs/llm_eval/RUBRIC.md
+docs/llm_eval/PROBLEM_LIBRARY.md
+docs/llm_eval/*FEASIBILITY_POLICY_DRAFT*.md
+docs/data_pipeline/RECRUITING_SIDE_DATA_SPEC_MVP.md
+docs/INDEED_SOURCE_CONFIG_VALIDATION_CASE_V0.2.md
+scripts/
+README.draft*.md
+
+# Generated outputs and model caches
+outputs/
+cache/
+*.log
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# JavaScript
+node_modules/
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+.claude/
+
+# Local scratch work
+work/
+tmp/
+docs/process/DEBUG_LOG.md
+

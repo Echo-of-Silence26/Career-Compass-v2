@@ -1,0 +1,100 @@
+source_config_id: indeed-de-v0.1
+source: Indeed
+source_type: ApifyActor
+status: Draft
+enabled: true
+trigger_types: [Manual]
+adapter_version: indeed-apify-v0.1
+parser_version: indeed-apify-direct-mapping-v0.1
+credential_reference: APIFY_TOKEN
+
+# Adopted via ADR-018, replacing the Indeed MCP
+# connector (source_type: ClaudeMCPConnector, adapter_version
+# indeed-claude-mcp-v0.1) previously described here. That connector's probe
+# history and mapping remain documented in
+# docs/data_pipeline/SOURCE_ADAPTER_SPEC_MVP.md §3 for reference, but this
+# config now describes the active Apify adapter only.
+connector:
+  actor_id: borderline/indeed-scraper
+  actor_build: default  # tracks latest published version; not yet pinned, see activation_checks
+  pricing: PayPerEvent  # ~$0.005/dataset item, observed 2026-08-31 probe
+  call_shape: SingleCallDiscoveryAndDetail  # one call returns full job detail, no separate detail step
+  input_fields: [country, query, location, maxRows, sort]
+  output_format: StructuredJson
+
+query_execution:
+  query_mode: OneAtomicTitlePerRun
+  search_term_from_query_definition: true
+  location:
+    city: Munich
+    country_code: DE
+    execution_scope: CityOnly
+    radius_expansion: Deferred
+  unsupported_search_parameters:
+    - language
+    - work_mode
+    - publication_date_or_lookback
+  unsupported_parameter_behavior: EvaluateAfterCaptureOrRecordCoverageGap
+
+result_retrieval:
+  business_result_cap: null
+  process_all_returned_results: true
+  cost_cap_note: "Apify's default per-run cost cap ($0.02) was hit in the 2026-08-31 probe after 3 requested items were already returned. An explicit maxRows-to-cost-cap sizing policy is still open -- see activation_checks."
+
+freshness:
+  lookback_days_from_parent_config: true
+  evaluation_stage: AfterDetailCapture
+  raw_publication_date_missing: RetainWithWarning
+  outside_lookback_window: RetainSourceRecordExcludeFromCurrentJobFlow
+
+identity:
+  strong_identity: [source, source_job_id]
+  source_job_id:
+    value: jobKey
+    connector_provides_directly: true  # unlike the MCP connector, no redirect resolution needed
+    field_mapping_source_path: jobKey
+    status: Verified
+  fallback_identity:
+    strength: Weak
+    signals: [source_url, normalized_company, normalized_title, normalized_location, content_hash]
+    action: CreateDuplicateCandidateDoNotAutoMerge
+
+access_restriction:
+  bypass_access_controls: false
+  connector_opaque_error:
+    error_code: UNKNOWN
+    retryability: Unknown
+    maximum_manual_retries: 1
+  note: "Partial/closed/access-restricted/retry behavior not yet probed -- only 3 successful, non-edge-case samples exist (SOURCE_ADAPTER_SPEC_MVP.md §2)."
+
+raw_capture:
+  format: jsonl
+  immutable: true
+  include_raw_payload: true  # full dataset item persisted verbatim, see raw_payload in SourceRecord
+  structured_extraction_must_not_replace_raw_payload: true
+  forbidden_persisted_values:
+    - cookies
+    - set_cookie_headers
+    - authorization_headers
+
+field_mapping:
+  source_job_id: {source_path: jobKey, status: Verified}
+  source_url: {source_path: jobUrl, status: Verified, note: "Already canonical https://www.indeed.com/viewjob?jk=... form; no shortlink or redirect resolution needed, unlike the superseded MCP connector."}
+  resolved_url: {source_path: jobUrl, status: Verified}
+  raw_title: {source_path: title, status: Verified}
+  raw_company: {source_path: companyName, status: Verified}
+  raw_location: {source_path: location, status: Verified, note: "Structured object (city, postalCode, country, countryCode, latitude, longitude), not a free-text string."}
+  raw_description: {source_path: descriptionText, status: Verified, note: "descriptionHtml also returned; persisted only in raw_payload, not as raw_description."}
+  raw_publication_date: {source_path: datePublished, status: Verified, note: "ISO calendar date."}
+  raw_job_status: {source_path: expired, status: New, note: "Boolean. All 3 probe samples were expired:false; a confirmed-true (closed) sample has not yet been observed."}
+  raw_work_mode: {source_path: isRemote, status: New, note: "Boolean, Remote-vs-not only. Does not distinguish Hybrid from On-site -- open mapping question."}
+
+activation_checks:
+  - Pin actor_build to a specific version instead of default once the field mapping above is trusted
+  - Confirm expired actually flips to true on a genuinely closed posting before trusting raw_job_status
+  - Resolve the isRemote boolean's Hybrid-vs-On-site ambiguity against the common work_mode enum
+  - Confirm descriptionText full-vs-preview behavior across more samples and search-filter combinations
+  - Define an explicit per-run cost-cap / maxRows sizing policy once real runs scrape more than a handful of jobs
+  - Validate append-only JSONL persistence and exact-identity deduplication
+  - Validate Munich city search execution; do not claim coverage of the surrounding 150 km policy radius
+  - Keep this source Manual; do not activate autonomous or scheduled crawling

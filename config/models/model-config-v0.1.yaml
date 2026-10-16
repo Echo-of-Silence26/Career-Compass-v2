@@ -1,0 +1,83 @@
+model_config_version: mvp-model-config-v0.1
+status: >-
+  Draft v0.1, per docs/data_pipeline/MODEL_CONFIG_MVP.md. Only the `anthropic`
+  provider has a real client implementation today (pipeline/model_client.py);
+  the `provider` field is read at run time so a stage's provider/model can
+  change here without touching pipeline/job_extractor.py,
+  pipeline/hard_disqualifier.py, or pipeline/capability_fit.py -- they only
+  depend on the ModelClient interface, not on any one provider's SDK.
+
+# Extraction, Hard Disqualifier, and Capability Fit currently use different
+# models (see docs/data_pipeline/MODEL_CONFIG_MVP.md's "may use the same
+# model initially" -- not required here). All three are TBD-confirmed
+# placeholders pending the first live run; freeze before the first
+# comparable/prospective batch per that doc.
+stages:
+  extraction:
+    provider: anthropic
+    model: claude-haiku-4-5
+    temperature: 0
+    max_tokens: 2000
+    # Anthropic native Structured Outputs (output_config.format), not a prompt
+    # instruction -- schema is pipeline/job_extractor.py:RESPONSE_SCHEMA.
+    # Switched from prompt-only json_text after claude-haiku-4-5 was observed
+    # wrapping every response in a ```json fence despite the prompt saying not
+    # to (verified live 2026-09-04/05); output_config.format eliminates that
+    # class of failure at decode time instead of parsing around it.
+    structured_output_mode: json_schema
+    use_prompt_caching: false  # per-job JD text dominates the prompt; the static template portion is small enough that caching isn't worth the complexity here
+    retry:
+      max_attempts: 1  # no automatic retry for MVP (DATA_PIPELINE_MVP_SPEC.md §4.6) -- a failed call is recorded, not retried
+  hard_disqualifier:
+    provider: anthropic
+    model: claude-sonnet-5
+    # claude-sonnet-5 rejects the `temperature` request parameter outright
+    # ("`temperature` is deprecated for this model", verified live 2026-09-04)
+    # -- pipeline/model_client.py retries without it on that error, so this
+    # stage actually runs at the model's own default, not temperature=0.
+    # Output is therefore not guaranteed reproducible call-to-call; EXPERIMENTS.md
+    # reruns that assume exact determinism for this stage should account for that.
+    temperature: 0
+    # claude-sonnet-5 runs adaptive thinking by default (no way to opt out via
+    # `temperature`/prompt), and thinking tokens draw from this same max_tokens
+    # budget. At 3000, a live capability_fit call hit stop_reason=max_tokens
+    # after spending 2999 tokens on thinking alone, returning empty text
+    # (verified live 2026-09-05). Thinking depth is also not fully
+    # deterministic call-to-call for the same prompt -- one retest at 8000
+    # still truncated, another identical call at 8000 completed fine using
+    # ~4400 thinking + ~700 output tokens. Raised to 16000 (matches Anthropic's
+    # documented non-streaming default) for headroom, but this reduces the
+    # probability of truncation, it does not guarantee it can't recur -- a
+    # truncated call still correctly surfaces as a recorded, human-reviewable
+    # failure (ADR-015: no silent retry/repair), it just shouldn't be common.
+    max_tokens: 16000
+    structured_output_mode: json_text
+    use_prompt_caching: true  # policy text + Candidate Profile are identical across every job in a run
+    retry:
+      max_attempts: 1
+  capability_fit:
+    provider: anthropic
+    model: claude-sonnet-5
+    # Same claude-sonnet-5 temperature limitation as hard_disqualifier above --
+    # runs at the model's default, not temperature=0.
+    temperature: 0
+    # Raised to 16000 for the same reason as hard_disqualifier above -- this
+    # is the stage where the empty-response/max_tokens truncation was first
+    # observed live (2026-09-05), and where thinking-depth variance across
+    # identical calls was confirmed. See that stage's comment for detail.
+    max_tokens: 16000
+    structured_output_mode: json_text
+    use_prompt_caching: true
+    retry:
+      max_attempts: 1
+
+usage_logging:
+  record_per_call:
+    - stage
+    - job_id
+    - run_id
+    - model
+    - input_tokens
+    - output_tokens
+    - cache_read_input_tokens
+    - cache_creation_input_tokens

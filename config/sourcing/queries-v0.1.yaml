@@ -1,0 +1,110 @@
+query_set_id: query-set-v0.1
+status: Draft
+created_at: 2026-08-16
+
+# Run-level scope is authoritative over the legacy per-query `status` field.
+# Customer Success is archived for prospective sourcing; IT Project Management
+# is inactive. Only Growth and Product Management may be selected by a run.
+active_query_groups: [growth-v0.1, product-management-v0.1]
+archived_query_groups: [customer-success-v0.1]
+inactive_query_group_ids: [it-project-management-v0.1, marketing-v0.1]
+initial_run_query_group: product-management-v0.1
+
+# Each record is an atomic title query. Source adapters translate the shared
+# geography, language, date, and work-mode rules into source-specific filters.
+queries:
+  - {query_id: cs-customer-success-manager-en-v0.1, query_group_id: customer-success-v0.1, role_family: CustomerSuccess, term: "Customer Success Manager", language: en, status: Active}
+  - {query_id: cs-customer-success-specialist-en-v0.1, query_group_id: customer-success-v0.1, role_family: CustomerSuccess, term: "Customer Success Specialist", language: en, status: Active}
+  - {query_id: cs-customer-success-consultant-en-v0.1, query_group_id: customer-success-v0.1, role_family: CustomerSuccess, term: "Customer Success Consultant", language: en, status: Active}
+  - {query_id: cs-customer-success-partner-en-v0.1, query_group_id: customer-success-v0.1, role_family: CustomerSuccess, term: "Customer Success Partner", language: en, status: Active}
+  - {query_id: cs-customer-success-associate-en-v0.1, query_group_id: customer-success-v0.1, role_family: CustomerSuccess, term: "Customer Success Associate", language: en, status: Active}
+  - {query_id: cs-client-success-manager-en-v0.1, query_group_id: customer-success-v0.1, role_family: CustomerSuccess, term: "Client Success Manager", language: en, status: Active}
+  - {query_id: cs-client-success-partner-en-v0.1, query_group_id: customer-success-v0.1, role_family: CustomerSuccess, term: "Client Success Partner", language: en, status: Active}
+  - {query_id: cs-customer-engagement-manager-en-v0.1, query_group_id: customer-success-v0.1, role_family: CustomerSuccess, term: "Customer Engagement Manager", language: en, status: Active}
+  - {query_id: cs-customer-experience-manager-en-v0.1, query_group_id: customer-success-v0.1, role_family: CustomerSuccess, term: "Customer Experience Manager", language: en, status: Active}
+  - {query_id: cs-customer-enablement-manager-en-v0.1, query_group_id: customer-success-v0.1, role_family: CustomerSuccess, term: "Customer Enablement Manager", language: en, status: Active}
+  - {query_id: cs-customer-onboarding-manager-en-v0.1, query_group_id: customer-success-v0.1, role_family: CustomerSuccess, term: "Customer Onboarding Manager", language: en, status: Active}
+  - {query_id: cs-implementation-manager-en-v0.1, query_group_id: customer-success-v0.1, role_family: CustomerSuccess, term: "Implementation Manager", language: en, status: Active}
+  - {query_id: cs-implementation-consultant-en-v0.1, query_group_id: customer-success-v0.1, role_family: CustomerSuccess, term: "Implementation Consultant", language: en, status: Active}
+  - {query_id: cs-adoption-manager-en-v0.1, query_group_id: customer-success-v0.1, role_family: CustomerSuccess, term: "Adoption Manager", language: en, status: Active}
+  - {query_id: cs-account-manager-en-v0.1, query_group_id: customer-success-v0.1, role_family: CustomerSuccess, term: "Account Manager", language: en, status: Active}
+  - {query_id: cs-key-account-manager-en-v0.1, query_group_id: customer-success-v0.1, role_family: CustomerSuccess, term: "Key Account Manager", language: en, status: Active}
+  - {query_id: cs-kundenbetreuer-de-v0.1, query_group_id: customer-success-v0.1, role_family: CustomerSuccess, term: "Kundenbetreuer", language: de, status: Active}
+  - {query_id: cs-kundenberater-de-v0.1, query_group_id: customer-success-v0.1, role_family: CustomerSuccess, term: "Kundenberater", language: de, status: Active}
+  - {query_id: cs-customer-success-mitarbeiter-de-v0.1, query_group_id: customer-success-v0.1, role_family: CustomerSuccess, term: "Customer Success Mitarbeiter", language: de, status: Active}
+
+  - {query_id: growth-manager-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Growth Manager", language: en, status: Active}
+  - {query_id: growth-specialist-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Growth Specialist", language: en, status: Active}
+  - {query_id: growth-associate-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Growth Associate", language: en, status: Active}
+  - {query_id: growth-marketing-manager-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Growth Marketing Manager", language: en, status: Active}
+  - {query_id: growth-operations-manager-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Growth Operations Manager", language: en, status: Active}
+  - {query_id: growth-project-manager-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Growth Project Manager", language: en, status: Active}
+  - {query_id: business-growth-manager-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Business Growth Manager", language: en, status: Active}
+  - {query_id: customer-growth-manager-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Customer Growth Manager", language: en, status: Active}
+  - {query_id: lifecycle-marketing-manager-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Lifecycle Marketing Manager", language: en, status: Active}
+  - {query_id: lifecycle-manager-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Lifecycle Manager", language: en, status: Active}
+  - {query_id: retention-manager-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Retention Manager", language: en, status: Active}
+  - {query_id: customer-retention-manager-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Customer Retention Manager", language: en, status: Active}
+  - {query_id: crm-manager-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "CRM Manager", language: en, status: Active}
+  - {query_id: engagement-manager-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Engagement Manager", language: en, status: Active}
+  - {query_id: go-to-market-manager-growth-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Go-to-Market Manager", language: en, status: Active}
+  - {query_id: gtm-manager-growth-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "GTM Manager", language: en, status: Active}
+  - {query_id: revenue-operations-manager-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Revenue Operations Manager", language: en, status: Active}
+  - {query_id: commercial-operations-manager-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Commercial Operations Manager", language: en, status: Active}
+  - {query_id: business-development-manager-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Business Development Manager", language: en, status: Active}
+  - {query_id: growth-innovation-manager-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Growth Innovation Manager", language: en, status: Active}
+  - {query_id: growth-strategy-specialist-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Growth Strategy Specialist", language: en, status: Active}
+  - {query_id: growth-strategy-associate-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Growth Strategy Associate", language: en, status: Active}
+  - {query_id: new-business-and-growth-manager-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "New Business & Growth Manager", language: en, status: Active}
+  - {query_id: product-lead-growth-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Product Lead Growth", language: en, status: Active}
+  - {query_id: growth-marketing-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Growth Marketing", language: en, status: Active}
+  - {query_id: product-enablement-manager-en-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Product Enablement Manager", language: en, status: Active}
+  - {query_id: produktmarketing-manager-de-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Produktmarketing Manager", language: de, status: Active}
+  - {query_id: produktmarketing-spezialist-de-v0.1, query_group_id: growth-v0.1, role_family: Growth, term: "Produktmarketing Spezialist", language: de, status: Active}
+
+  - {query_id: product-manager-en-v0.1, query_group_id: product-management-v0.1, role_family: ProductManagement, term: "Product Manager", language: en, status: Active}
+  - {query_id: product-owner-en-v0.1, query_group_id: product-management-v0.1, role_family: ProductManagement, term: "Product Owner", language: en, status: Active}
+  - {query_id: produktmanager-de-v0.1, query_group_id: product-management-v0.1, role_family: ProductManagement, term: "Produktmanager", language: de, status: Active}
+  - {query_id: product-owner-de-v0.1, query_group_id: product-management-v0.1, role_family: ProductManagement, term: "Product Owner", language: de, status: Active}
+
+  - {query_id: it-project-manager-en-v0.1, query_group_id: it-project-management-v0.1, role_family: ITProjectManagement, term: "IT Project Manager", language: en, status: Active}
+  - {query_id: digital-project-manager-en-v0.1, query_group_id: it-project-management-v0.1, role_family: ITProjectManagement, term: "Digital Project Manager", language: en, status: Active}
+  - {query_id: software-project-manager-en-v0.1, query_group_id: it-project-management-v0.1, role_family: ITProjectManagement, term: "Software Project Manager", language: en, status: Active}
+  - {query_id: technology-project-manager-en-v0.1, query_group_id: it-project-management-v0.1, role_family: ITProjectManagement, term: "Technology Project Manager", language: en, status: Active}
+  - {query_id: project-coordinator-en-v0.1, query_group_id: it-project-management-v0.1, role_family: ITProjectManagement, term: "Project Coordinator", language: en, status: Active}
+  - {query_id: it-project-coordinator-en-v0.1, query_group_id: it-project-management-v0.1, role_family: ITProjectManagement, term: "IT Project Coordinator", language: en, status: Active}
+  - {query_id: program-coordinator-en-v0.1, query_group_id: it-project-management-v0.1, role_family: ITProjectManagement, term: "Program Coordinator", language: en, status: Active}
+  - {query_id: implementation-project-manager-en-v0.1, query_group_id: it-project-management-v0.1, role_family: ITProjectManagement, term: "Implementation Project Manager", language: en, status: Active}
+  - {query_id: customer-project-manager-en-v0.1, query_group_id: it-project-management-v0.1, role_family: ITProjectManagement, term: "Customer Project Manager", language: en, status: Active}
+  - {query_id: delivery-manager-en-v0.1, query_group_id: it-project-management-v0.1, role_family: ITProjectManagement, term: "Delivery Manager", language: en, status: Active}
+  - {query_id: service-delivery-manager-en-v0.1, query_group_id: it-project-management-v0.1, role_family: ITProjectManagement, term: "Service Delivery Manager", language: en, status: Active}
+  - {query_id: pmo-en-v0.1, query_group_id: it-project-management-v0.1, role_family: ITProjectManagement, term: "PMO", language: en, status: Active}
+  - {query_id: pmo-manager-en-v0.1, query_group_id: it-project-management-v0.1, role_family: ITProjectManagement, term: "PMO Manager", language: en, status: Active}
+  - {query_id: projektmanager-it-de-v0.1, query_group_id: it-project-management-v0.1, role_family: ITProjectManagement, term: "Projektmanager IT", language: de, status: Active}
+  - {query_id: it-projektmanager-de-v0.1, query_group_id: it-project-management-v0.1, role_family: ITProjectManagement, term: "IT-Projektmanager", language: de, status: Active}
+  - {query_id: digitaler-projektmanager-de-v0.1, query_group_id: it-project-management-v0.1, role_family: ITProjectManagement, term: "Digitaler Projektmanager", language: de, status: Active}
+  - {query_id: projektkoordinator-it-de-v0.1, query_group_id: it-project-management-v0.1, role_family: ITProjectManagement, term: "Projektkoordinator IT", language: de, status: Active}
+
+inactive_query_groups:
+  - query_group_id: customer-success-v0.1
+    role_family: CustomerSuccess
+    status: Archived
+    reason: Historical CSM data remains available for baseline evaluation, but
+      CSM is outside prospective sourcing scope from 2026-09-03.
+  - query_group_id: it-project-management-v0.1
+    role_family: ITProjectManagement
+    status: Inactive
+    reason: Current prospective scope contains only Growth and Product Management.
+  - query_group_id: marketing-v0.1
+    role_family: Marketing
+    status: Inactive
+    reason: >-
+      No keyword vocabulary for a standalone Marketing role family exists in
+      SOURCING_POLICY_MVP.md §3 (only Customer Success, Growth,
+      and IT Project Management are defined there). The 10 terms previously
+      active here (Product
+      Marketing Manager, etc.) had no Policy provenance and are dropped
+      rather than retained, per the 2026-08-30 decision that Marketing is a
+      growth lever, not a target role family, and query keywords must align
+      to the Policy file.
+    activation_requires_new_policy_version: true

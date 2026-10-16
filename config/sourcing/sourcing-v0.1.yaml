@@ -1,0 +1,89 @@
+sourcing_config_id: sourcing-config-v0.1
+sourcing_policy_version: sourcing-policy-v0.2
+status: Draft
+created_at: 2026-08-16
+valid_from: null
+valid_to: null
+change_reason: First executable sourcing configuration
+
+active_role_families: [Growth, ProductManagement]
+archived_role_families: [CustomerSuccess]
+inactive_role_families: [ITProjectManagement, Marketing]
+
+initial_run:
+  role_family: ProductManagement
+  business_result_cap: null
+  source_execution: sequential
+  cost_authorized: true
+
+candidate_base:
+  city: Munich
+  country_code: DE
+  timezone: Europe/Berlin
+
+languages: [de, en]
+
+geography:
+  remote:
+    office_location_scope: global
+    require_explicit_work_from_germany: true
+    unclear_eligibility: CollectAsUnknown
+  hybrid:
+    center_city: Munich
+    radius_km: 150
+  onsite:
+    center_city: Munich
+    radius_km: 150
+
+time_window:
+  initial_lookback_days: 30
+  incremental_frequency: daily
+  incremental_lookback_days: 1
+  scheduled_backfill: false
+  gap_recovery: ManualOnlyAfterDetectedIncompleteOrFailedRun
+  schedule_timezone: Europe/Berlin
+  schedule_local_time: "08:00"
+  require_confirmed_open_for_job: true
+  unknown_publication_date:
+    collect_if_confirmed_open: true
+    emit_parser_warning: true
+
+result_policy:
+  business_result_cap: null
+  # Null means no product/business truncation. Each source actor must still
+  # retain a technical spend guard and record incomplete/partial retrieval.
+  require_technical_cost_guard: true
+  record_unscanned_results: true
+  incomplete_run_status: Partial
+
+storage:
+  raw_payload:
+    format: jsonl
+    immutable: true
+  operational_store:
+    engine: jsonl
+  human_review_exports:
+    formats: [xlsx, csv]
+    source_of_truth: false
+
+sources:
+  - source_config_id: indeed-de-v0.1
+    config_path: sources/indeed-de-v0.1.yaml
+    enabled: true
+  - source_config_id: linkedin-apify-v0.1
+    config_path: sources/linkedin-apify-v0.1.yaml
+    enabled: true  # un-parked via ADR-017, 2026-08-31 -- was linkedin-extension-v0.1 (disabled, Chrome Extension design)
+
+query_definitions_path: queries-v0.1.yaml
+
+identity:
+  strong_key: [source, source_job_id]
+  fallback_key: [source_url]
+  unchanged_rule: SameSourceIdAndSameContentHash
+  update_rule: SameSourceIdAndChangedContentHash
+  cross_source_rule: CreateDuplicateCandidate
+
+queue:
+  human_states: [Unreviewed, Rejected, Applied]
+  enqueue_states: [Unreviewed]
+  reopen_requires_explicit_reset: true

@@ -1,0 +1,7 @@
+apify-client
+pydantic
+anthropic
+pyyaml
+openpyxl
+python-dotenv
+python-docx

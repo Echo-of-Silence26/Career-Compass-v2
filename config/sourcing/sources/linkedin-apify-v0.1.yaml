@@ -1,0 +1,97 @@
+source_config_id: linkedin-apify-v0.1
+source: LinkedIn
+source_type: ApifyActor
+status: Draft
+enabled: true
+trigger_types: [Manual]
+adapter_version: linkedin-apify-v0.1
+parser_version: linkedin-apify-direct-mapping-v0.1
+credential_reference: APIFY_TOKEN
+
+# Un-parked via ADR-017, replacing the Chrome
+# Extension adapter design (source_config_id linkedin-extension-v0.1,
+# capture_method UserTriggeredChromeExtension) previously described in this
+# file. That design remains documented, parked and unbuilt, in
+# docs/data_pipeline/SOURCE_ADAPTER_SPEC_MVP.md §5 for reference, but this
+# config now describes the active Apify adapter only.
+connector:
+  actor_id: curious_coder/linkedin-jobs-scraper
+  actor_build: latest  # not yet pinned, see activation_checks
+  pricing: PayPerEvent  # ~$0.001-0.002/dataset item plus a negligible per-run start fee, observed 2026-08-31 probe
+  call_shape: SingleCallDiscoveryAndDetail  # one call returns full job detail (incl. company profile when scrapeCompany:true), no separate detail step
+  input_fields: [urls, limitPerSource, scrapeCompany]
+  output_format: StructuredJson
+
+query_execution:
+  query_mode: OneAtomicTitlePerRun
+  search_term_from_query_definition: true
+  location:
+    city: Munich
+    country_code: DE
+    execution_scope: CityOnly
+    radius_expansion: Deferred
+  unsupported_search_parameters:
+    - publication_date_or_lookback
+  unsupported_parameter_behavior: EvaluateAfterCaptureOrRecordCoverageGap
+
+result_retrieval:
+  business_result_cap: null
+  process_all_returned_results: true
+  run_log_dataset_count_mismatch_note: "2026-08-31 probe: actor log reported 'Scraped 3 jobs' but the dataset contained only 2 items -- unexplained, not yet root-caused. Treat records_captured counts from this adapter as provisional (SOURCE_ADAPTER_SPEC_MVP.md §4) until this is either reproduced or ruled out."
+
+freshness:
+  lookback_days_from_parent_config: true
+  evaluation_stage: AfterDetailCapture
+  raw_publication_date_missing: RetainWithWarning
+  outside_lookback_window: RetainSourceRecordExcludeFromCurrentJobFlow
+
+identity:
+  strong_identity: [source, source_job_id]
+  source_job_id:
+    value: id
+    connector_provides_directly: true  # LinkedIn's own stable numeric job ID, not a synthetic per-session placeholder
+    field_mapping_source_path: id
+    status: Verified
+  fallback_identity:
+    strength: Weak
+    signals: [source_url, normalized_company, normalized_title, normalized_location, content_hash]
+    action: CreateDuplicateCandidateDoNotAutoMerge
+
+access_restriction:
+  bypass_access_controls: false
+  connector_opaque_error:
+    error_code: UNKNOWN
+    retryability: Unknown
+    maximum_manual_retries: 1
+  note: "Partial/closed/access-restricted/retry behavior not yet probed -- only 2 successful, non-edge-case samples exist (SOURCE_ADAPTER_SPEC_MVP.md §4)."
+
+raw_capture:
+  format: jsonl
+  immutable: true
+  include_raw_payload: true
+  structured_extraction_must_not_replace_raw_payload: true
+  forbidden_persisted_values:
+    - cookies
+    - set_cookie_headers
+    - authorization_headers
+
+field_mapping:
+  source_job_id: {source_path: id, status: Verified}
+  source_url: {source_path: link, status: Verified, note: "Direct canonical https://{locale}.linkedin.com/jobs/view/{slug}-{id} URL; carries search-session tracking query params (position, pageNum, refId, trackingId)."}
+  resolved_url: {source_path: "derived: link with tracking query params stripped", status: Verified}
+  raw_title: {source_path: title, status: Verified}
+  raw_company: {source_path: companyName, status: Verified}
+  raw_location: {source_path: location, status: Verified, note: "Single free-text string, e.g. 'Munich, Bavaria, Germany' -- same city/country-split-in-parser situation as Indeed."}
+  raw_description: {source_path: descriptionText, status: Verified, note: "descriptionHtml also returned; persisted only in raw_payload, not as raw_description."}
+  raw_publication_date: {source_path: postedAt, status: Verified, note: "ISO calendar date, date-only."}
+  raw_job_status: {source_path: null, status: NotAvailable, note: "No field signals open/closed/expired in either probe sample."}
+  raw_work_mode: {source_path: null, status: NotAvailable, note: "Not present as a structured field in either probe sample."}
+
+activation_checks:
+  - Pin actor_build to a specific version instead of latest once the field mapping above is trusted
+  - Root-cause the run-log-vs-dataset-count mismatch before relying on this adapter's counters for reconciliation
+  - Confirm whether the {locale} subdomain in link is stable per company or varies by search region
+  - Confirm descriptionText full-vs-preview behavior and raw_job_status / raw_work_mode structured availability across more samples and input-filter combinations
+  - Validate append-only JSONL persistence and exact-identity deduplication
+  - Validate Munich city search execution; do not claim coverage of the surrounding 150 km policy radius
+  - Keep this source Manual; do not activate autonomous or scheduled crawling
