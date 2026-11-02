@@ -15,7 +15,7 @@ and the end-to-end run has known bugs.
 
 1. **Sources** job postings from LinkedIn and Indeed.
 2. **Deduplicates** roles posted in several places and checks they are still open.
-3. **Eligibility gate:** a hard-requirements check that filters out roles I'm not eligible for.
+3. **Eligibility gate:** a hard-requirements check that filters out roles that do not meet my requirements.
 4. **Fit assessment:** ranks the remaining roles by how well my experience matches.
 
 ## What it doesn't do
