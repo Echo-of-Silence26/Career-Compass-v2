@@ -7,9 +7,9 @@ and the end-to-end run has known bugs.
 ## What problem it solves
 
 - **Time.** Checking job boards every day and filtering for relevant roles by hand is slow and repetitive.
-- **Applying into silence.** I couldn't see my own blind spots. The LLM acts as a sparring partner: it shows
-  where my experience is direct, adjacent or only transferable, and where the evidence for a requirement is missing.
-- **Learning by building.** A real project to learn AI-assisted coding (Claude Code) and LLM evaluation hands-on.
+- **Applying into silence.** The LLM acts as a sparring partner: it shows
+ where my experience is direct, adjacent or only transferable, and where the evidence for a requirement is missing.
+
 
 ## What it does
 
