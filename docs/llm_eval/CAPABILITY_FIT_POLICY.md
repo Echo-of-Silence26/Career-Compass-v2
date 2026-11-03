@@ -1,526 +1,376 @@
 # Capability Fit Policy
 
-Policy version: `capability-fit-v0.3`
-Status: Draft. The structure was accepted on 2026-09-10 and revised the same
-day, per the user's decisions on industry, education, top-3 core skills, and
-the five evidence states. On 2026-09-11 every evidence entry gained a required
-`reasoning` field and the skill-map table view was added (Section 9.1). The
-policy must be frozen before the next prospective run.
-Decision stage: Capability-fit pre-assessment
-Supersedes: `capability-fit-v0.2` (archived outside this repository)
+Policy version: `capability-fit-v0.4`
+Status: Draft (2026-10-29). Design agreed on 2026-10-28; thresholds are under
+calibration against the 15-job test (Section 10) and must be frozen before the
+next prospective run.
+Decision stage: Capability-fit assessment
+Supersedes: `capability-fit-v0.3` (archived in
+[`archive/CAPABILITY_FIT_POLICY_v0.3.md`](archive/CAPABILITY_FIT_POLICY_v0.3.md))
 
-Changes from v0.2:
+Changes from v0.3 (consolidating the manual Job Fit Rubric v2 into this
+policy):
 
-- The unit of assessment changes from "the few most important
-  responsibilities" to a full **hard-skill list** decomposed from the JD.
-- The single combined judgment is split into three separately stored layers:
-  **(1) hard-skill decomposition → (2) marking the three most central skills →
-  (3) per-skill evidence matching**. Evidence matching covers every skill, not
-  only the three core ones.
-- Evidence uses **five states**: `done` / `participated` / `adjacent` /
-  `unconfirmed` / `not_done`. Each state tells downstream use (review, resume
-  material) how the evidence may be used. Absence from the CV is
-  `unconfirmed`, not a gap.
-- **Industry is a separate variable, parallel to the hard skills.** It is
-  extracted and matched on its own and is never folded into a skill or counted
-  as a shifted dimension.
-- The label is derived from the three core skills by a fixed rule (Section 8).
-  The model no longer picks it holistically.
-- `core_matches` and `key_gap` are replaced by the full per-skill table.
-- Every evidence entry carries a `reasoning` that explains its state. The
-  skill map is reviewed as a three-column table (Requirement / Your evidence /
-  Assessment), in which code prints a fixed verdict for each state
-  (Section 9.1).
+- Reading the job now produces a **problem statement** and a **candidate
+  profile from the hiring manager's side**, before any skill work.
+- Only the **5 most critical hard skills** are output, ranked. Skill #1 is the
+  one that solves the problem statement. The three-core-skill marking is
+  removed.
+- Evidence matching breaks every skill into **action, operating object, goal,
+  and context** on both the JD and the CV side, and assigns one of four states:
+  **Direct / Adjacent / Transferable / Missing**, plus **ownership**.
+  CV silence is now `Missing` (v0.3: `unconfirmed`).
+- The label is **Fit / Stretch / Not fit**, derived by code from a 0–10 skill
+  score with a skill-#1 guard and a PM/PO cap (v0.3: Strong / Plausible /
+  Weak / Unclear).
+- Edge signals from rubric v2 are not part of this stage.
 
 ## 1. Purpose
 
-This policy defines the capability-fit assessment for all target role families.
+This policy defines the capability-fit assessment for every job that passes
+the hard-disqualifier stage. It answers:
 
-The main output is a **skill map** for each job: the hard skills the job needs,
-the three most central of them, and the candidate's evidence state for each
-one. The skill map tells the candidate what to prepare, which experience can
-be used as-is, which must be framed carefully, and what still needs
-confirming. It can also be aggregated across jobs (for example, "80% of Growth
-roles ask for SQL and the CV has no evidence of it").
+> How credible is the candidate for this role, judged on real evidence for the
+> skills the job depends on most?
 
-The Fit label is secondary. It exists to:
-
-1. reduce the time needed for human job review; and
-2. test whether the labels distinguish job groups with different interview
-   outcomes.
-
-The assessment must remain simple. A criterion should not be added unless it
-improves the skill map, helps distinguish clear fit from clear mismatch,
-explains materially different market outcomes, or reduces human review effort.
+The output is a **skill map** (the five most critical hard skills and the
+candidate's evidence for each) and a **label** that sets review priority. The
+label is not an application gate: every job that passes the hard
+disqualifiers stays visible, including `Not fit`, and the human makes the
+final decision.
 
 ## 2. Scope and Boundary
 
 Run this assessment only after the job passes the shared hard-disqualifier
-policy. Do not re-run or reconsider that stage.
-
-Capability fit asks:
-
-> Which hard skills does this role need, which three matter most, what
-> industry is it in, and what is the candidate's evidence state for each?
+policy. Do not re-run or reconsider that stage. In particular, language,
+years of experience, seniority, contract, location, and function are decided
+there and are not scored again here.
 
 Capability fit does not assess:
 
-- personal interest or attractiveness;
-- company or industry desirability;
-- what the candidate could do after major CV changes or portfolio work;
-- general learnability without current evidence; or
+- personal interest, attractiveness, or company desirability;
+- what the candidate could do after CV changes or portfolio work;
+- general learnability without current evidence;
+- competitive edge against the applicant pool; or
 - the final Apply / Do not apply decision.
-
-All results remain subject to human review. The system stops after producing
-this assessment and does not turn it into an application recommendation.
 
 ## 3. Structure
 
-The layers are produced in order. Each is stored as a separate field, and a
-later layer must not rewrite an earlier one.
-
-| Layer | Question | Sees the CV? | Sees the core marking? |
+| Step | Question | Sees the CV? | Output |
 |---|---|---|---|
-| 1. Hard-skill decomposition | Which hard skills does this JD require? | **No** | n/a |
-| 2. Core marking | Which three skills are most central? | **No** | n/a |
-| Industry (parallel) | Which industry is this role in, and does the JD require industry experience? | **No** | n/a |
-| 3. Evidence matching | What is the candidate's evidence state for each skill, and for the industry? | Yes | **No** |
-| Label | Aggregate the core skills' states | (code) | (code) |
+| A. Read the job | What problem is the role hired to solve, who would the hiring manager picture, and which five hard skills matter most? | **No** | Problem statement, candidate profile, top 5 skills (ranked), industry |
+| B. Match evidence | For each of the five skills, what is the candidate's evidence? | Yes | Four-part comparison, state, ownership, reasoning |
+| C. Label | Score and label | Code | Score, label |
+| D. Supporting detail | What sector is it, and how was the call reached? | n/a | Industry/sector, reasoning trail |
 
 Separation rules:
 
-- Layers 1–2 and the industry field describe the job, so they are produced
-  **without the Candidate Profile**. A skill must never be omitted, reworded,
-  or down-weighted because of what the candidate has or lacks.
-- Layer 2 must not add, remove, merge, or rename Layer 1 skills. It only marks
-  three of them.
-- Layer 3 receives the full Layer 1 skill list and the industry **without the
-  core marking**. It must return exactly one evidence entry for every skill,
-  plus one for the industry. Evidence matching is not pruned by importance.
-- The core marking affects only the label (Section 8). It never decides which
-  skills get matched or appear in the output.
+- Step A describes the job only. A skill must never be omitted, reworded, or
+  re-ranked because of what the candidate has or lacks.
+- Step B must return exactly one evidence entry for each of the five skills
+  and must not add, drop, rename, or re-rank them.
+- The label is derived by code (Section 7). The model never chooses it.
 
-## 4. Layer 1: Hard-Skill Decomposition
+## 4. Step A: Read the Job (CV-blind)
 
-### 4.1 What counts as a hard skill
+### 4.1 Problem statement
 
-A hard skill is a capability that a CV can evidence and a reviewer can check.
-Each skill has one `category`:
+One sentence from the hiring manager's side:
 
-- `tool`: a named software product, platform, or programming/query language
-  (for example, Salesforce, HubSpot, Google Ads, SQL, SAP BW, Jira).
-- `method`: a practice, technique, functional capability, or specialised
-  knowledge area (for example, A/B testing, B2B lead generation, SEO, customer
-  onboarding programme design, category management, backlog prioritisation,
-  GDPR compliance).
-- `language`: a spoken or written language at a stated or implied level.
-- `credential`: a certification or licence (for example, PSPO, PMP).
+> They need someone who …, because ….
 
-Exclude from the skill list:
+If the problem cannot be written from the JD, the posting is too thin to
+assess. Record `insufficient_jd` and the reason; the label is `Not fit` with
+that reason shown, and the job stays visible for human review. A posting this
+vague is often a "zombie" posting (for example, a recruiting agency collecting
+candidates without a concrete vacancy), so it does not deserve tailoring time.
 
-- **industry**, which is a separate parallel variable (Section 6);
+### 4.2 Candidate profile (hiring manager's view)
+
+Two or three lines describing the person the hiring manager pictures in the
+seat: background, typical prior role, the experience and tools they would
+expect. This describes the job, not the candidate.
+
+### 4.3 The five most critical hard skills
+
+The model reads the full JD and identifies every hard skill internally, but
+outputs only the **five most critical**, ranked most critical first.
+
+What counts as a hard skill (unchanged from v0.3):
+
+- a capability a CV can evidence and a reviewer can check;
+- category `tool`, `method`, or `credential`.
+
+Exclude:
+
+- **languages**, which are decided by Hard Disqualifier rule 3.4;
 - soft skills and personal traits (communication, teamwork, proactivity,
-  structured thinking, hands-on mentality, and similar). Every CV claims them
-  and no CV evidence can check them;
-- years of experience and seniority wording, which belong to Hard
-  Disqualifier rule 3.1;
-- formal education and degree requirements. The candidate has several years of
-  work experience, and experience is weighted over degrees (decision of
-  2026-09-10); and
-- employment conditions (location, contract type, compensation, travel), which
-  belong to Hard Disqualifier.
+  hands-on mentality, and similar);
+- years of experience and seniority wording (Hard Disqualifier 3.1);
+- formal education and degree requirements (experience is weighted over
+  degrees);
+- employment conditions (location, contract, compensation, travel); and
+- the industry itself, which is recorded separately (Step D).
 
-### 4.2 Granularity and wording
+Ranking rules:
 
-- List every distinct hard skill the JD **requires, prefers, or clearly depends
-  on through a listed responsibility**. Do not drop a skill for being minor.
-  Importance belongs to Layer 2.
-- Name each skill **with the functional qualifiers the JD makes material**, so
-  Layer 3 can judge it without guessing. Write "Enterprise SaaS end-user
-  onboarding and adoption", not "Onboarding". Write "B2B lead generation via
-  paid channels", not "Lead generation". Do not put the industry into skill
-  names. Industry is captured once, in Section 6.
-- One skill per verifiable capability. Do not merge two distinct skills into
-  one entry ("SEO and paid social"), and do not split one skill into synonyms.
-- A skill named only as an example inside a list ("e.g. HubSpot, Salesforce or
-  similar") is one skill ("CRM platform"), not one per example.
+- **Skill #1 is the skill that most directly solves the problem statement.**
+  If #1 does not connect to the problem statement, the ranking is wrong.
+- A skill is critical when its absence would make a hiring manager see a
+  basic mismatch, not something to learn on the job. `Required` wording alone
+  does not make a skill critical; a `preferred` skill ranks high only when the
+  responsibilities show the role cannot function without it.
+- A specific tool ranks high only when operating that tool is itself central
+  to the role. When a comparable tool would plausibly do, name the underlying
+  method or the tool category instead.
+- Name each skill with the qualifiers the JD makes material ("B2B SaaS
+  customer onboarding and adoption", not "Onboarding"), one verifiable
+  capability per skill.
+- If the JD yields fewer than five hard skills, output all of them. The label
+  uses percentages, so fewer skills are judged fairly.
 
-### 4.3 Fields
+For each skill record:
 
-For each skill:
+- `rank`: 1–5;
+- `skill`: the skill name with its material qualifiers;
+- `category`: `tool` | `method` | `credential`;
+- `jd_signal`: `required` | `preferred` | `responsibility`;
+- `jd_quote`: the shortest sufficient JD wording; and
+- the JD side of the four-part breakdown (Section 5.1).
 
-- `skill_id`: a stable id within this assessment (`S1`, `S2`, ...);
-- `skill`: the skill name with its material functional qualifiers;
-- `category`: `tool` | `method` | `language` | `credential`;
-- `jd_signal`: how the JD itself presents the skill. This is a factual reading,
-  not a judgment:
-  - `required`: stated as a requirement or must-have;
-  - `preferred`: stated as a plus, nice-to-have, "ideally", or equivalent;
-  - `responsibility`: not in the requirements list, but a listed
-    responsibility clearly depends on it;
-- `jd_quote`: the shortest sufficient JD wording that supports the skill.
+## 5. Step B: Evidence Matching
 
-## 5. Layer 2: The Three Core Skills
+### 5.1 Four-part breakdown
 
-Mark the **three** skills the role's central function depends on most. If the
-JD yields fewer than three hard skills, mark all of them. List them most
-central first, each with a short `reason`.
+Every skill is broken down into the same four parts on **both** the JD side
+and the CV side before a state is assigned:
 
-Guidance:
+| Part | Question |
+|---|---|
+| **Action** | What is done? (onboard, train, configure, analyse, coordinate…) |
+| **Operating object** | On whom or what? (consumers, enterprise end users, pharma clients, patients, CRM data, hardware…) |
+| **Goal** | To achieve what? (tool adoption, programme enrolment, renewal, on-time delivery…) |
+| **Context** | Under what conditions? (B2B/B2C, segment, tool, scale, depth) |
 
-- A core skill is one whose absence a hiring manager would treat as a basic
-  mismatch, not something to learn on the job. Typical signals: it underpins a
-  primary responsibility, or the JD presents it as a must-have for the central
-  function.
-- `jd_signal: required` does not automatically mean core, because JDs often
-  list generic requirements. A `preferred` skill is core only when the
-  responsibilities clearly show the role cannot function without it.
-- A specific `tool` is core only when operating that tool is itself the
-  central function (for example, "Salesforce Administrator"). When a
-  comparable tool would plausibly do, prefer the underlying method.
-- The `reason` must be short and specific, so a human reviewer can disagree
-  with the choice.
+The state follows from which parts differ. A shared verb or keyword alone
+never makes evidence `Direct`. This is semantic matching, not keyword
+matching.
 
-## 6. Industry (Parallel Variable)
+### 5.2 States
 
-Industry is recorded once per job, next to the skill list rather than inside
-it.
-
-Decomposition (CV-blind):
-
-- `industry`: the industry or sector the role operates in, as evidenced by the
-  JD (for example, "FMCG e-commerce marketplace", "IT hardware distribution").
-  Use null only when the JD does not reveal it;
-- `jd_signal`: `required` (industry experience is stated as required),
-  `preferred` (stated as a plus), or `context_only` (the industry is apparent
-  but no industry experience is asked for);
-- `jd_quote`: the shortest sufficient JD wording, or null when `industry` is
-  null.
-
-Matching: the industry gets one evidence entry using the same five states and
-field rules as a skill (Section 7). It is recorded and shown in parallel with
-the label but **does not change the label**.
-
-## 7. Layer 3: Evidence Matching (Five States)
-
-For **every** Layer 1 skill, and for the industry, assign exactly one evidence
-state using only the Candidate Profile. Do not skip any skill, and do not treat
-any skill as more or less important than another.
-
-### 7.1 The five states
-
-| State | Meaning | How the result may be used |
+| State | Rule | How the evidence may be used |
 |---|---|---|
-| `done` | The candidate has done it, with concrete evidence in the profile | Can be used for matching and resume material, but the recorded responsibility scope must be kept. Never inflate it. |
-| `participated` | The candidate took part but did not independently own it | A partial match. Must not be turned into "fully responsible for" or "led". |
-| `adjacent` | The candidate has related experience on a shifted object, customer, goal, context, delivery model, tool, or depth | State what transfers. Must not be presented as direct experience. |
-| `unconfirmed` | The profile does not give enough information either way | Mark as pending confirmation. Must not be judged as "cannot do". |
-| `not_done` | The profile **explicitly** states the candidate has not done it | Record as a gap. Do not ask about it again and do not invent evidence. |
+| **Direct** | Action, operating object, and goal all match. Context may differ slightly | Claim as is, within the recorded scope |
+| **Adjacent** | Action, operating object, and goal match, but the **context** shifts materially: a different tool in the same category, a different customer segment, or a narrower depth | Claim with one qualifying phrase |
+| **Transferable** | The action matches, but the **operating object or the goal** differs | Needs a reframing story; never present as direct experience |
+| **Missing** | No relevant evidence in the CV | Gap |
 
-Decision rules:
+`Adjacent` is stronger than `Transferable`: an adjacent skill is the same work
+in a different setting; a transferable skill is the same kind of work on a
+different thing or for a different purpose.
 
-- **Silence is `unconfirmed`, not `not_done`.** A skill the CV does not mention
-  is `unconfirmed`. Use `not_done` only when the Candidate Profile explicitly
-  records that the candidate has not done it (for example,
-  `people_management_evidence: none`, or an entry the candidate has confirmed
-  as not done). Cite that statement.
-- **`done` vs `participated`** turns on ownership. If the evidence shows the
-  candidate owned the work, it is `done`. If it shows contribution to work
-  someone else owned (supported, contributed to, was part of a team that...),
-  it is `participated`.
-- **`done`/`participated` vs `adjacent`** turns on whether it is the same skill
-  as stated. A shared verb or keyword alone never makes evidence `done`. When
-  the object, customer, goal, product context, delivery model, or tool
-  differs from the skill as stated, the evidence is `adjacent`.
-- Judge each skill against its wording and `jd_quote` from Layer 1. A context
-  difference that the skill's wording does not name, including industry, is
-  not a shifted dimension.
-- A skill is often compound (a method plus a named channel, tool, or
-  analysis). When the evidence establishes only part of it: if the missing
-  part is **material** to the skill as worded, the state is `adjacent` with
-  `depth`. If it is minor, the state stays `done` or `participated` and the
-  `reasoning` names the part that is not established.
-- Background that only shares the setting (same industry, same product type)
-  without the functional work is not evidence. The state is `unconfirmed`, and
-  the background may be mentioned in `reasoning`.
-- Learnability, general aptitude, and inference beyond the profile are not
-  evidence.
+**CV silence is `Missing`.** If the candidate later adds evidence, the CV or
+Candidate Profile is updated and later jobs are matched against it.
 
-### 7.2 Shifted dimensions (for `adjacent`)
+### 5.3 Ownership
 
-Every `adjacent` entry lists which dimensions shift, using these values:
+Every non-`Missing` entry records ownership:
 
-- `object`: what or whom the action operates on, including the beneficiary;
-- `customer`: the paying counterpart or customer segment (for example, B2B vs
-  B2C, enterprise vs SMB);
-- `goal`: what the action is meant to achieve;
-- `product_context`: the product type or delivery surface named in the skill;
-- `delivery_model`: how the work is delivered (for example, in-house vs
-  external advisory, named-account vs pooled);
-- `tool`: a comparable but different tool or platform;
-- `depth`: the evidence covers a materially narrower slice of the skill than
-  the JD requires.
+- `Owned`: the candidate owned the work (led, owned, was accountable for it);
+- `Contributed`: the candidate took part in work someone else owned
+  (supported, contributed to, was part of a team that…).
 
-Worked example (candidate's actual case):
+### 5.4 Worked example
 
-- JD skill: "Enterprise SaaS end-user onboarding and adoption". The JD means
-  teaching enterprise employees to operate the software and embedding it in
-  their workflow.
-- CV: "onboarding" means explaining to pharma clients how the service serves
-  their patients.
-- Same verb, but `object` (patients vs employees) and `goal` (explaining a
-  service vs adopting software in a workflow) both shift. The result is
-  `adjacent`, not `done`. The note states what transfers: running structured
-  onboarding for a B2B client relationship.
+JD skill: "Enterprise SaaS end-user onboarding and adoption".
 
-### 7.3 Fields
+| | JD | CV |
+|---|---|---|
+| Action | Onboard, educate | Onboard, explain |
+| Operating object | **Enterprise employees** (tool users) | **Patients** in a programme |
+| Goal | **Tool adoption in a workflow** | **Programme enrolment** |
+| Context | B2B SaaS | B2B2C pharma service |
 
-For each skill (`skill_id` must match Layer 1) and for the industry:
+The operating object and the goal both shift → **Transferable**, not Direct.
+What carries over: running a structured onboarding flow, stakeholder
+communication, measuring activation.
 
-- `state`: `done` | `participated` | `adjacent` | `unconfirmed` | `not_done`;
-- `candidate_evidence`: the relevant CV evidence, written so a reader can
-  check it without opening the profile. Give the evidence item id or profile
-  section, the employer or project, and what was done, with its concrete
-  result where the profile gives one (for example,
-  `ev-06 cruise e-commerce (China): built performance-ads acquisition from
-  scratch; CPA -50%`).
-  Several items may be cited. Required for `done`, `participated`,
-  `adjacent`, and `not_done`. For `not_done` it cites the explicit statement.
-  Null for `unconfirmed`;
-- `scope`: required for `done` and `participated`. It records the candidate's
-  actual responsibility scope (for example, "owned two named pharma accounts
-  end-to-end" or "contributed product-concept input; upsell owned by sales").
-  Null otherwise;
-- `shifted_dimensions`: non-empty for `adjacent`, empty otherwise;
-- `reasoning`: required for **every** state. One or two sentences explaining
-  the state to the candidate:
-  - `done` / `participated`: what the evidence establishes, and any minor part
-    of the skill as worded that it does not establish (Section 7.1). If it
-    covers the whole skill, say so;
-  - `adjacent`: what transfers and what does not, naming the shift;
-  - `unconfirmed`: what the CV does not show, phrased so the candidate can
-    confirm or deny it. Background that shares only the setting may be
-    mentioned here;
-  - `not_done`: the recorded gap.
+### 5.5 Fields
 
-  The reasoning explains the one assigned state. It must not suggest a second
-  state (such as "direct evidence; partial match") or a stronger verdict than
-  the state supports.
+For each of the five skills:
 
-Also return `unknowns`: only missing **JD** information that could materially
-change a state or the core marking. Candidate-side gaps belong in
-`unconfirmed` entries, not here. Use an empty list when there are none.
+- `rank` (must match Step A);
+- `cv_evidence`: the CV item, employer or project, and what was done, with the
+  concrete result where the CV gives one; null for `Missing`;
+- CV-side `action`, `operating_object`, `goal`, `context`; null for `Missing`;
+- `state`: `Direct` | `Adjacent` | `Transferable` | `Missing`;
+- `ownership`: `Owned` | `Contributed`; null for `Missing`; and
+- `reasoning`: one or two sentences naming which parts match and which shift.
+  It explains the one assigned state and must not suggest a stronger one.
 
-## 8. Label Aggregation
+Background that only shares the setting (same industry, same product type)
+without the functional work is not evidence. Learnability, aptitude, and
+inference beyond the CV are not evidence.
 
-The label is derived deterministically from the evidence states of the core
-skills. The model does not choose it. Non-core skills and the industry never
-change the label, but they remain in the skill map.
+## 6. Scoring
 
-Apply the rules in order:
+Each skill scores:
+
+| Score | Condition |
+|---|---|
+| **2** | `Direct` and `Owned` |
+| **1** | `Direct` and `Contributed`, or `Adjacent`, or `Transferable` |
+| **0** | `Missing` |
+
+The total runs from 0 to 2 × the number of skills (0–10 for five skills).
+The score share is total ÷ maximum. Adjacent and Transferable score the same;
+the distinction stays in the reasoning because it tells the candidate how much
+reframing a CV or interview needs.
+
+The score is computed by code from the states. The model does not produce a
+score.
+
+## 7. Label Rules
+
+Apply in order:
 
 ```text
-No hard skill identified (JD too thin to decompose)
--> Unclear
+Skill #1 is Missing                   -> Not fit   (regardless of total)
+Score share >= 60%                    -> Fit
+Score share >= 30%                    -> Stretch
+Otherwise                             -> Not fit
 
-Any core skill is `not_done`
--> Weak Fit
-
-Any core skill is `unconfirmed`
--> Unclear          (confirmation could still change the label)
-
-Every core skill is `done`
--> Strong Fit
-
-No core skill is `done` (all are `participated` or `adjacent`)
--> Weak Fit
-
-Otherwise (at least one core `done`, the rest `participated` or `adjacent`)
--> Plausible Fit
+Then: role family is PM / PO and label is Fit -> Stretch
 ```
 
-`Unclear` here means "resolve the pending confirmations first". The
-`unconfirmed` entries say exactly what to confirm. These are categories, not
-score bands. Do not create or infer a numerical fit score.
+With five skills: Fit = 6–10, Stretch = 3–5, Not fit = 0–2. The 60% line
+corresponds to about three fully owned skills; partial evidence alone cannot
+reach Fit.
+
+The PM / PO cap comes from the role-family decision recorded by Hard
+Disqualifier rule 3.8 ("PM/PO stretch family").
+
+Examples (D = Direct and Owned, P = partial, M = Missing):
+
+| Skills #1–#5 | Score | Label |
+|---|---|---|
+| D, D, D, M, M | 6 | Fit |
+| D, P, P, P, P | 6 | Fit |
+| D, D, P, M, M | 5 | Stretch |
+| P, P, P, P, P | 5 | Stretch |
+| D, P, M, M, M | 3 | Stretch |
+| D, M, M, M, M | 2 | Not fit |
+| M, D, D, D, D | 8 | Not fit (#1 Missing) |
+
+## 8. Step D: Supporting Detail
+
+Supporting detail explains the result and never changes the label.
+
+- **Industry / sector**: the sector the role operates in, as evidenced by the
+  JD (for example "B2B SaaS – compliance automation"), with `jd_signal`:
+  `required` (industry experience required), `preferred` (a plus), or
+  `context_only` (apparent but not asked for).
+- **Reasoning trail**: one line per step, so the reviewer can see where the
+  call turned. Example:
+
+  > Problem: they need someone to build the operating engine of Customer
+  > Success … · #1 CS operating-model design: Transferable (object: launch
+  > workflow vs CS function) · #5 pilot → measure → scale or kill: Direct,
+  > owned · Score 6/10 = 60% → **Fit** · Industry: B2B SaaS, carbon accounting
+  > (context only).
+
+Further supporting fields (title flag, company stage, pay against target,
+domain advantage) are deferred to a later version.
 
 ## 9. Required Output
 
-The model must not produce a job summary, an attractiveness assessment, an
-Apply / Do not apply recommendation, or a numerical score. The persisted
-assessment has this shape:
+The model produces Steps A, B, and the industry part of D. It must not produce
+a label, a score, an attractiveness assessment, or an Apply / Do not apply
+recommendation. Code derives the score and label.
 
 ```yaml
 capability_fit:
-  policy_version: capability-fit-v0.3
-  label: PlausibleFit            # derived per Section 8, not model-chosen
-
-  skills:                        # Layer 1, CV-blind
-    - skill_id: S1
-      skill: B2B lead generation via paid channels
+  policy_version: capability-fit-v0.4
+  problem_statement: "They need someone who … because …"
+  candidate_profile: "…"
+  insufficient_jd: false
+  skills:                       # Step A, CV-blind, ranked, max 5
+    - rank: 1
+      skill: B2B SaaS customer onboarding and adoption
       category: method
       jd_signal: required
-      jd_quote: "Manage and scale B2B lead generation across paid and non-paid channels"
-    - skill_id: S2
-      skill: Structured growth experimentation
-      category: method
-      jd_signal: responsibility
-      jd_quote: "Test new channels and scale what works"
-    - skill_id: S3
-      skill: Marketing automation / CRM platform
-      category: tool
-      jd_signal: required
-      jd_quote: "Hands-on with HubSpot or a similar CRM"
-    - skill_id: S4
-      skill: SEO and website content management
-      category: method
-      jd_signal: preferred
-      jd_quote: "SEO know-how is a plus"
-
-  core_skills:                   # Layer 2, CV-blind, exactly 3, most central first
-    - skill_id: S1
-      reason: Lead generation is the role's primary responsibility.
-    - skill_id: S2
-      reason: Channel testing is how the lead-gen target is met.
-    - skill_id: S3
-      reason: Campaign execution runs through the CRM.
-
-  industry:                      # parallel variable, CV-blind
-    industry: Industrial procurement software (B2B SaaS)
+      jd_quote: "Own onboarding of new customers …"
+      jd: {action: …, operating_object: …, goal: …, context: …}
+  evidence:                     # Step B, one entry per skill
+    - rank: 1
+      cv_evidence: "Smartpatient CSM: improved onboarding funnel (enrolment 76→83%)"
+      cv: {action: …, operating_object: …, goal: …, context: …}
+      state: Transferable
+      ownership: Owned
+      reasoning: "Object (patients vs SaaS users) and goal (enrolment vs adoption) shift."
+  industry:
+    industry: B2B SaaS – compliance automation
     jd_signal: context_only
-    jd_quote: "our AI procurement platform for industrial buyers"
-
-  evidence:                      # Layer 3, core-blind, full table
-    - skill_id: S1
-      state: adjacent
-      candidate_evidence: "ev-06 cruise e-commerce (China): built performance-ads acquisition from scratch; CPA -50%"
-      scope: null
-      shifted_dimensions: [customer]
-      reasoning: Paid-channel acquisition transfers directly; it targeted B2C consumers, not B2B buyers.
-    - skill_id: S2
-      state: done
-      candidate_evidence: "ev-03 health-app company: designed and ran hypothesis-driven acquisition-channel experiments"
-      scope: Designed and ran the experiments; results informed leadership go/no-go.
-      shifted_dimensions: []
-      reasoning: Owned the test-and-decide loop for new channels. Scaling a winning channel afterwards is not described.
-    - skill_id: S3
-      state: unconfirmed
-      candidate_evidence: null
-      scope: null
-      shifted_dimensions: []
-      reasoning: The CV does not show hands-on HubSpot or other marketing-automation CRM use. Have you used one?
-    - skill_id: S4
-      state: unconfirmed
-      candidate_evidence: null
-      scope: null
-      shifted_dimensions: []
-      reasoning: No SEO or website content work appears in the CV. Have you done any hands-on?
-
-  industry_evidence:
-    state: adjacent
-    candidate_evidence: "ev-01 health-app company: pharma accounts on a B2B SaaS health app"
-    scope: null
-    shifted_dimensions: [product_context]
-    reasoning: B2B SaaS experience transfers; healthcare, not industrial procurement.
-
-  unknowns:
-    - The JD does not state whether campaigns are run in-house or via an agency.
+    jd_quote: "…"
+  # derived by code, not by the model:
+  score: 6
+  score_max: 10
+  label: Fit
+  reasoning_trail: "…"
 ```
 
-In this example core S3 is `unconfirmed`, so the actual derived label would be
-`Unclear` until the CRM question is answered. If S3 were confirmed `done` or
-`adjacent`, the label would be `Plausible Fit`, since S2 is `done`.
+## 10. Calibration and Open Items
 
-### 9.1 Skill-Map Table (Review View)
+The design was first tested on 15 Indeed postings on 2026-10-28
+(`Fit_Test_15_jobs_2026-10-28.xlsx`, kept outside this repository). Seven
+passed the hard disqualifiers (3 Fit, 2 Stretch, 2 Not fit); the eight
+excluded jobs were also scored, only for calibration. The candidate's own
+calls on these jobs become the labelled set for the decisions below. Any rule
+change must re-pass that set.
 
-The persisted assessment above is the system of record. For review, code
-renders it as a skill-map table with one row per skill: core skills first
-(most central first), then the other skills in Layer 1 order, then the
-industry as the last row. The model does not write the table.
+Open items to settle before freezing v0.4:
 
-| Column | Content |
-|---|---|
-| Requirement | `skill`, marked ★ when core, with its `jd_signal` |
-| Your evidence | `candidate_evidence`, plus `Scope:` for `done` / `participated`. "None found in CV" for `unconfirmed` |
-| Assessment | The fixed verdict for the state, followed by `reasoning` |
+1. **Stretch threshold.** At 30%, roles scored only on Transferable/Adjacent
+   points (furniture sales advisor, wholesale sales coordinator) reach
+   Stretch. Option: Stretch requires at least one `Direct` + `Owned` skill, or
+   raise the line to 40%.
+2. **Fit with a single Direct skill.** D, P, P, P, P reaches 60%, including
+   when #1 is only Transferable. Option: Fit also requires #1 to be `Direct`,
+   or at least two `Direct` + `Owned` skills.
+3. **Skill-#1 guard on tools.** A missing tool at #1 (for example HubSpot
+   administration) forces Not fit even when the process half of the role is a
+   strong match. Decide whether the guard applies when #1 is a `tool`.
+4. **Tool names in the CV.** Many `Missing` states come from tools not named in
+   the CV (HubSpot, ticketing systems, Notion/ClickUp). These are candidate-side
+   updates, not policy changes.
 
-The verdict is fixed per state, so rows stay comparable across jobs:
+Human review: record each disagreement with the step where it arises:
+problem statement, skill selection or ranking (A), breakdown or state (B), or
+the label rule (C). The step shows which part of the policy needs work.
 
-| State | Verdict |
-|---|---|
-| `done` | Direct evidence |
-| `participated` | Partial match (contributed, not owned) |
-| `adjacent` | Transferable (shifted: *dimensions*) |
-| `unconfirmed` | Not shown in CV (to confirm) |
-| `not_done` | Confirmed gap |
-
-The example above renders as:
-
-| Requirement | Your evidence | Assessment |
-|---|---|---|
-| ★ B2B lead generation via paid channels (required) | ev-06 cruise e-commerce (China): built performance-ads acquisition from scratch; CPA -50% | **Transferable (shifted: customer).** Paid-channel acquisition transfers directly; it targeted B2C consumers, not B2B buyers. |
-| ★ Structured growth experimentation (responsibility) | ev-03 health-app company: designed and ran hypothesis-driven acquisition-channel experiments. Scope: designed and ran the experiments; results informed leadership go/no-go. | **Direct evidence.** Owned the test-and-decide loop for new channels. Scaling a winning channel afterwards is not described. |
-| ★ Marketing automation / CRM platform (required) | None found in CV | **Not shown in CV (to confirm).** The CV does not show hands-on HubSpot or other marketing-automation CRM use. Have you used one? |
-| SEO and website content management (preferred) | None found in CV | **Not shown in CV (to confirm).** No SEO or website content work appears in the CV. Have you done any hands-on? |
-| Industry: Industrial procurement software (B2B SaaS) (context_only) | ev-01 health-app company: pharma accounts on a B2B SaaS health app | **Transferable (shifted: product_context).** B2B SaaS experience transfers; healthcare, not industrial procurement. |
-
-## 10. Human Review and Validation
-
-Every Strong, Plausible, Weak, and Unclear result is reviewed by the human
-evaluator during the evaluation phase. The reviewer may disagree at any layer:
-a missing or spurious skill (Layer 1), a wrong core choice (Layer 2), a wrong
-industry reading, or a wrong evidence state (Layer 3). Record the layer of
-each override, because it shows where the policy needs work.
-
-When the candidate answers an `unconfirmed` question, record the answer in the
-Candidate Profile, either as new evidence or as an explicit "not done"
-statement. Later jobs asking for the same skill then resolve to `done` /
-`participated` / `adjacent` / `not_done` and are not asked again.
-
-The policy is useful only if it supports at least one intended result:
-
-- a skill map the candidate actually uses to decide what to prepare;
-- shorter human review time; or
-- meaningful separation in interview outcomes among the fit-label groups.
-
-An expected but unproven market pattern is:
+The hypothesis to test, not to assume:
 
 ```text
-Strong Fit interview rate > Plausible Fit interview rate > Weak Fit interview rate
+Fit interview rate > Stretch interview rate > Not fit interview rate
 ```
 
-This is a hypothesis to test, not an assumption to encode as ground truth.
-
-Capability Fit is an auxiliary label for prioritisation, explanation, and later
-analysis. It is not an ingestion, visibility, or application gate. Every job
-with no hard-disqualifier `Fail` is stored, remains visible, and is presented
-for human review regardless of its Fit label. Historical application behaviour
-is retained only as historical evidence and is not Capability Fit ground truth.
-
-## 11. Versioning and Open Items
+## 11. Versioning
 
 - Every assessment record must store `fit_policy_version`.
 - Existing assessments keep the policy version under which they were made.
-  v0.2 records are not re-labelled.
-- Changes to layer definitions, evidence states, the aggregation rule, or
+  v0.2 and v0.3 records are not re-labelled.
+- Changes to the steps, evidence states, scoring, thresholds, label rules, or
   required outputs require a new policy version.
 - Editorial clarifications that do not alter decisions may remain within the
-  current version and should be recorded in version control.
+  current version and should be recorded in the changelog.
 
-Settled on 2026-09-10: industry is a parallel variable, education is
-excluded, exactly three core skills are marked, and evidence uses the five
-states.
+### Version history
 
-Open items to settle before freezing v0.3:
-
-1. **Industry and the label.** The industry is matched and shown, but it does
-   not affect the label. Revisit if `jd_signal: required` industry mismatches
-   turn out to predict outcomes.
-2. **"No core `done` → Weak Fit".** A job whose three core skills are all
-   `participated` or `adjacent` is Weak Fit. Confirm this is not too harsh on
-   real JDs.
-3. **Volume of `Unclear`.** Because silence is `unconfirmed`, early runs may
-   produce many `Unclear` labels until the Candidate Profile accumulates
-   confirmed answers.
-4. **Cross-job skill map.** Skill names are free text per JD. Aggregating
-   frequency across jobs will need a normalisation step, which is not part of
-   this policy.
+- `v0.2`: holistic fit judgment on the few most important responsibilities
+  (archived outside this repository).
+- `v0.3` (2026-09-10): full hard-skill decomposition, three core skills, five
+  evidence states, Strong / Plausible / Weak / Unclear label.
+- `v0.4` (draft, 2026-10-29): problem statement and hiring-manager profile;
+  top five ranked skills; four-part semantic breakdown; Direct / Adjacent /
+  Transferable / Missing with ownership; 0–10 score; Fit / Stretch / Not fit
+  with the skill-#1 guard and PM/PO cap.

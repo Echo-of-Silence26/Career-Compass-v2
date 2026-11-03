@@ -1,7 +1,7 @@
 """Stage 6: Hard Disqualifier assessment.
 
 Loads Stage A's instructions from EVAL_EXECUTION_PROMPT.md and the full
-frozen hard-disqualifier-v0.2 policy text at runtime (not
+hard-disqualifier-v0.4 policy text at runtime (not
 duplicated into code -- the doc stays the single source of truth), supplies
 the Job/JD snapshot + Candidate Profile, calls the model, and validates the
 response against assessment_schema.HardDisqualifierResult. An invalid or
@@ -20,7 +20,7 @@ from pipeline.job_schema import Job
 from pipeline.llm_common import AssessmentCallFailure, read_doc
 from pipeline.model_client import ModelClient
 
-POLICY_VERSION = "hard-disqualifier-v0.2"
+POLICY_VERSION = "hard-disqualifier-v0.4"
 POLICY_PATH = Path("docs/llm_eval/HARD_DISQUALIFIER_POLICY.md")
 EXECUTION_PROMPT_PATH = Path("docs/llm_eval/EVAL_EXECUTION_PROMPT.md")
 
@@ -45,8 +45,8 @@ markdown fencing, no commentary before or after it:
   "overall_decision": "Exclude" | "ProceedToCapabilityFit"
 }
 
-Evaluate one entry per policy rule (3.1(a), 3.1(b), 3.1(c), 3.2, 3.3, 3.4, \
-3.5, 3.6). `evidence_quote` is required (non-null) for every Fail, Unknown, \
+Evaluate one entry per policy rule (3.1(a), 3.1(b), 3.1(c), 3.1(d), 3.3, \
+3.4, 3.5, 3.6, 3.7, 3.8). `evidence_quote` is required (non-null) for every Fail, Unknown, \
 or Flag; it may be null only for Pass. Any Fail -> overall_decision \
 "Exclude". No Fail -> overall_decision "ProceedToCapabilityFit". Do not add \
 extra keys or commentary outside the JSON object.

@@ -28,7 +28,7 @@ from pipeline.run_manifest import RunManifest
 from pipeline.source_adapter import LocationFilter
 
 SOURCE_NAME_ALIASES = {"indeed": "Indeed", "linkedin": "LinkedIn"}
-HD_POLICY_VERSION = "hard-disqualifier-v0.2"
+HD_POLICY_VERSION = "hard-disqualifier-v0.4"
 FIT_POLICY_VERSION = "capability-fit-v0.3"
 EXTRACTION_PROMPT_VERSION = "job-extraction-v0.1"
 
