@@ -61,7 +61,7 @@ which jobs should proceed, be reviewed, or be excluded.
 
 - Shared hard-disqualifier policy for all target role families:
   [`HARD_DISQUALIFIER_POLICY.md`](HARD_DISQUALIFIER_POLICY.md),
-  version `hard-disqualifier-v0.2`
+  version `hard-disqualifier-v0.4` (v0.2 and v0.3 archived)
 - Shared capability-fit policy for all target role families:
   [`CAPABILITY_FIT_POLICY.md`](CAPABILITY_FIT_POLICY.md),
   version `capability-fit-v0.3` (v0.2 archived)

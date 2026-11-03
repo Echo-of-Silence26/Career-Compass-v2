@@ -40,7 +40,7 @@ The evaluation input contains:
    provenance;
 2. its immutable raw JD snapshot or reference and content hash;
 3. the fixed Candidate Profile/CV;
-4. the frozen `hard-disqualifier-v0.2` policy;
+4. the `hard-disqualifier-v0.4` policy (frozen before the run starts);
 5. the `capability-fit-v0.3` policy (frozen before the run starts); and
 6. all execution versions listed in §1.
 
